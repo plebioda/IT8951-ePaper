@@ -252,23 +252,32 @@ UBYTE GUI_ReadBmp(const char *path, UWORD x, UWORD y)
 {
 	//bmp file pointer
 	FILE *fp;
+
+	fp = fopen(path,"rb");
+	if (fp == NULL)
+	{
+		return(-1);
+	}
+
+        UBYTE ret = GUI_ReadBmp_file(fp, x, y);
+
+	fclose(fp);
+	return(ret);
+}
+
+UBYTE GUI_ReadBmp_file(FILE *fp, UWORD x, UWORD y)
+{
+	//bmp file pointer
 	BMPFILEHEADER FileHead;
 	BMPINFOHEADER InfoHead;
 	UDOUBLE total_length;
 	UBYTE *buf = NULL;
 	UDOUBLE ret = -1;
 	
-	fp = fopen(path,"rb");
-	if (fp == NULL)
-	{
-		return(-1);
-	}
- 
 	ret = fread(&FileHead, sizeof(BMPFILEHEADER),1, fp);
 	if (ret != 1)
 	{
 		Debug("Read header error!\n");
-		fclose(fp);
 		return(-2);
 	}
 
@@ -276,7 +285,6 @@ UBYTE GUI_ReadBmp(const char *path, UWORD x, UWORD y)
 	if (FileHead.bType != 0x4D42)
 	{
 		Debug("It's not a BMP file\n");
-		fclose(fp);
 		return(-3);
 	}
 	
@@ -288,7 +296,6 @@ UBYTE GUI_ReadBmp(const char *path, UWORD x, UWORD y)
 	if (ret != 1)
 	{
 		Debug("Read infoheader error!\n");
-		fclose(fp);
 		return(-4);
 	}
 	
@@ -420,6 +427,5 @@ UBYTE GUI_ReadBmp(const char *path, UWORD x, UWORD y)
 	bmp_src_buf = NULL;
 	bmp_dst_buf = NULL;
 
-	fclose(fp);
 	return(0);
 }

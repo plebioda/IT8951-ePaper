@@ -83,5 +83,6 @@ typedef struct
 }__attribute__((packed)) BMPRGBQUAD;//Tell the compiler to cancel optimal alignment of the structure during compilation
 
 UBYTE GUI_ReadBmp(const char *path, UWORD x, UWORD y);
+UBYTE GUI_ReadBmp_file(FILE *fp, UWORD x, UWORD y);
 
 #endif

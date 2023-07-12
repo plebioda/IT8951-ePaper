@@ -64,15 +64,9 @@ int main(int argc, char *argv[])
 {
     //Exception handling:ctrl + c
     signal(SIGINT, Handler);
-
-    if (argc < 2){
-        Debug("Please input VCOM value on FPC cable!\r\n");
-        Debug("Example: sudo ./epd -2.51\r\n");
-        exit(1);
-    }
-	if (argc != 3){
+    if (argc < 3){
 		Debug("Please input e-Paper display mode!\r\n");
-		Debug("Example: sudo ./epd -2.51 0 or sudo ./epd -2.51 1\r\n");
+		Debug("Example: sudo ./epd -2.51 0 <path>.. or sudo ./epd -2.51 1 ..\r\n");
 		Debug("Now, 10.3 inch glass panle is mode1, else is mode0\r\n");
 		Debug("If you don't know what to type in just type 0 \r\n");
 		exit(1);
@@ -124,7 +118,7 @@ int main(int argc, char *argv[])
     }
     Debug("A2 Mode:%d\r\n", A2_Mode);
 
-	EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, INIT_Mode);
+	//EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, INIT_Mode);
 
 #if(USE_Factory_Test)
 	if(epd_mode == 3) 	// Color Test
@@ -133,22 +127,54 @@ int main(int argc, char *argv[])
 		Factory_Test_Only(Dev_Info, Init_Target_Memory_Addr);
 #endif
 
+    if (argc > 3) {
+        for (int i = 3; i < argc; i++) {
+            printf("Image: %s\n", argv[i]);
+            Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_4, argv[i]);
+        }
+
+        exit(0);
+    } else {
+        while (true) {
+            int ret;
+
+            ret = system("rm -rf ./screenshot.png ./screenshot.bmp");
+
+            printf("Creating screenshot\n");
+            ret = system("scrot ./screenshot.png");
+            if (ret) {
+                printf("Creating screenshot failed\n");
+                sleep(5);
+                continue;
+            }
+
+            printf("Converting screenshot\n");
+            ret = system("convert ./screenshot.png -depth 4 -negate -rotate 90 ./screenshot.bmp");
+            //ret = system("convert ./screenshot.png -depth 4 -rotate 90 ./screenshot.bmp");
+            if (ret) {
+                printf("Converting failed\n");
+                sleep(5);
+                continue;
+            }
+
+            printf("Displaying screenshot\n");
+            Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_4, "./screenshot.bmp");
+        }
+        exit(0);
+    }
 
 #if(USE_Normal_Demo)
     //Show 16 grayscale
     Display_ColorPalette_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr);
-	EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, GC16_Mode);
+    EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, GC16_Mode);
 
     //Show some character and pattern
     Display_CharacterPattern_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_4);
     EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, GC16_Mode);
 
-    //Show a bmp file
-    //1bp use A2 mode by default, before used it, refresh the screen with WHITE
-    Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_1);
-    Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_2);
-    Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_4);
-    EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, GC16_Mode);
+//    Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_2);
+//    Display_BMP_Example(Panel_Width, Panel_Height, Init_Target_Memory_Addr, BitsPerPixel_4);
+//    EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, GC16_Mode);
     
     //Show A2 mode refresh effect
     EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, A2_Mode);
@@ -183,7 +209,8 @@ int main(int argc, char *argv[])
     EPD_IT8951_Sleep();
 
     //In case RPI is transmitting image in no hold mode, which requires at most 10s
-    DEV_Delay_ms(5000);
+    //DEV_Delay_ms(30000);
+    while (true) sleep(1);
 
     DEV_Module_Exit();
     return 0;

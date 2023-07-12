@@ -65,7 +65,7 @@
  **/
  
 #define EPD_RST_PIN  17
-#define EPD_CS_PIN   8
+#define EPD_CS_PIN   23
 #define EPD_BUSY_PIN 24
 
 

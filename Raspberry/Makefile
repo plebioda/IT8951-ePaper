@@ -9,7 +9,7 @@ DIR_BIN      = ./bin
 OBJ_C = $(wildcard ${DIR_Config}/*.c ${DIR_EPD}/*.c ${DIR_FONTS}/*.c ${DIR_GUI}/*.c ${DIR_Examples}/*.c )
 OBJ_O = $(patsubst %.c,${DIR_BIN}/%.o,$(notdir ${OBJ_C}))
 
-TARGET = epd
+TARGET = epd-ng
 
 CC = gcc
 
